@@ -6,14 +6,17 @@
 		"bierner.markdown-preview-github-styles",
 		"esbenp.prettier-vscode",
 		"amodio.tsl-problem-matcher",
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"vadimcn.vscode-lldb",
+		"bungcip.better-toml",
+		"rust-lang.rust-analyzer"
 	],
     "settings": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "markdown-preview-github-styles.colorTheme": "light"
     },
-    "workspaceFolder": "/app",
+    "workspaceFolder": "/ext",
     "forwardPorts": [
         8080
     ]

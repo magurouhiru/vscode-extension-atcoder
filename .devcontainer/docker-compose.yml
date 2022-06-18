@@ -8,7 +8,8 @@ services:
       context: ./
       dockerfile: Dockerfile
     volumes:
-      - ../:/app/
+      - ../:/ext/
+      - ../vscode-atcoder-rust/:/app/
     ports:
       - "8080:8080"
     command: sleep infinity
