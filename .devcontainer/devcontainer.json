@@ -1,0 +1,20 @@
+{
+    "name": "vscode_extension_atcoder",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "vscode_extension_atcoder",
+    "extensions": [
+		"bierner.markdown-preview-github-styles",
+		"esbenp.prettier-vscode",
+		"amodio.tsl-problem-matcher",
+		"dbaeumer.vscode-eslint"
+	],
+    "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "markdown-preview-github-styles.colorTheme": "light"
+    },
+    "workspaceFolder": "/app",
+    "forwardPorts": [
+        8080
+    ]
+}

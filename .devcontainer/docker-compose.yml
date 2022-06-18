@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  vscode_extension_atcoder:
+    container_name: vscode_extension_atcoder
+    tty: true
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/app/
+    ports:
+      - "8080:8080"
+    command: sleep infinity
