@@ -1,0 +1,3 @@
+[submodule "vscode-atcoder-rust"]
+	path = vscode-atcoder-rust
+	url = https://github.com/magurouhiru/vscode-atcoder-rust.git
