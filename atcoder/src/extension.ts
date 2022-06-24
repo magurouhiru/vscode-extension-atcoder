@@ -5,10 +5,8 @@ import { TextDecoder, TextEncoder } from "util";
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable1 = vscode.commands.registerCommand(
-    "atcoder.createProject",
+    "atcoder.createOrChangeProject",
     () => {
-      console.log("run");
-
       vscode.window
         .showInputBox({
           placeHolder: "abcXXX",
@@ -49,18 +47,17 @@ export function activate(context: vscode.ExtensionContext) {
                   )
                 )
                 .then((taskDirectories) => {
-                  return new Promise<void>((res, rej) => {
-                    let f = true;
-                    taskDirectories.forEach((ele, _i, _array) => {
-                      if (ele[0] === consts.contestName) {
-                        f = false;
-                      }
-                    });
-                    if (f) {
-                      createTaskDirectories(consts);
+                  let f = true;
+                  taskDirectories.forEach((ele, _i, _array) => {
+                    if (ele[0] === consts.contestName) {
+                      f = false;
                     }
-                    res();
                   });
+                  if (f) {
+                    return createTaskDirectories(consts);
+                  } else {
+                    return Promise.resolve();
+                  }
                 })
                 .then(() => {
                   return vscode.workspace.fs.readDirectory(contestDirectoryUri);
@@ -104,9 +101,19 @@ function modifyWorkspaceFile(
 }
 
 function createTaskDirectories(consts: Consts): Promise<void> {
-  return getTasks(consts).then((tasks) => {
-    tasks.forEach((href, taskName, _map) => {
-      createTaskDirectory(consts, href, taskName);
+  return new Promise<void>((res, rej) => {
+    getTasks(consts).then((tasks) => {
+      let promises: Promise<void>[] = [];
+      tasks.forEach((href, taskName, _map) => {
+        promises.push(createTaskDirectory(consts, href, taskName));
+      });
+      Promise.all(promises)
+        .then(() => {
+          res();
+        })
+        .catch(() => {
+          rej();
+        });
     });
   });
 }
@@ -116,8 +123,8 @@ function createTaskDirectory(
   href: string,
   taskName: string
 ): Promise<void> {
-  return getSampleTestCase(consts, href, taskName).then((sampleTestCaseMap) => {
-    new Promise<void>((res, rej) => {
+  return new Promise<void>((res, rej) => {
+    getSampleTestCase(consts, href, taskName).then((sampleTestCaseMap) => {
       const projectName = consts.contestName + "_" + taskName;
       const taskDirectoryUri = vscode.Uri.joinPath(
         consts.projectRootUri,
@@ -128,12 +135,15 @@ function createTaskDirectory(
       vscode.workspace.fs
         .copy(consts.templateUri, taskDirectoryUri)
         .then(() => {
-          replaceTexts(
+          return replaceTexts(
             consts,
             taskDirectoryUri,
             projectName,
             sampleTestCaseMap
           );
+        })
+        .then(() => {
+          res();
         });
     });
   });
@@ -144,7 +154,7 @@ function replaceTexts(
   directoryPath: vscode.Uri,
   projectName: string,
   sampleTestCaseMap: Map<number, string[]>
-) {
+): Thenable<void> {
   return vscode.workspace.fs.readDirectory(directoryPath).then((val) => {
     val.forEach((ele, _i, _val) => {
       const path = vscode.Uri.joinPath(directoryPath, ele[0]);
@@ -164,15 +174,13 @@ function replaceText(
   projectName: string,
   sampleTestCaseMap: Map<number, string[]>
 ) {
-  if (consts.langage === "Rust") {
-    replaceTextForRust(
-      consts,
-      filePath,
-      fileName,
-      projectName,
-      sampleTestCaseMap
-    );
-  }
+  return replaceTextForRust(
+    consts,
+    filePath,
+    fileName,
+    projectName,
+    sampleTestCaseMap
+  );
 }
 
 function getTasks(consts: Consts): Promise<Map<string, string>> {
@@ -278,9 +286,9 @@ const rustWorkspaceTemplate = String.raw`{
 }`;
 
 const rustProjectFolderTemplate = String.raw`
-{
-  "path": "projectFolder"
-},`;
+    {
+      "path": "projectFolder"
+    },`;
 const rustCargoTomlFilePathTemplate = String.raw`
       "cargoTomlFilePath",`;
 
