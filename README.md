@@ -1,12 +1,12 @@
 # vscode-extension-atcoder
 
-vscode の AtCoder 向け拡張機能
+vscode の AtCoder 向け拡張機能を開発するためのリポジトリです。
 
-この拡張機能で実現したいことは下記の通り。  
-できれば複数言語対応させたいので、機能と言語の表で表してる。
-|機能\\言語|Rust※1|Python3|
-|---|:---:|:---:|
-|プロジェクト自動生成|できた|そのうち|
-|テストコード自動生成|できた|そのうち|
+拡張機能の概要は[こちら](/atcoder/README.md)のほうがわかりやすいかも…  
+この拡張機能で実現したいことは
 
-※1 Rust は[こちら](https://github.com/magurouhiru/vscode-atcoder-rust)の環境向けに開発中
+- プロジェクト自動生成
+- テストコード自動生成
+
+です。  
+とりあえず、Rust の[こちら](https://github.com/magurouhiru/vscode-atcoder-rust)の環境では動いた。
