@@ -12,11 +12,10 @@ const DEFAULT_TADK_DATA_LIST: TaskData[] = ["A", "B", "C", "D", "E", "F"].map((n
 
 export function registerCreateProblemsCommand(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand('exatcoder.createProblems', async () => {
-        // const hb = new HeadLessBrowser();
-        vscode.window.showInformationMessage('create problems from ExAtCoder!');
+        // vscode.window.showInformationMessage('create problems from ExAtCoder!');
 
         const settings = getSettings();
-        vscode.window.showInformationMessage(`language: ${settings.language}, projectPath: ${settings.projectPath}`);
+        // vscode.window.showInformationMessage(`language: ${settings.language}, projectPath: ${settings.projectPath}`);
 
         const contestName = await vscode.window.showInputBox({
             placeHolder: "abcXXX",

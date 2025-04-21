@@ -20,8 +20,6 @@ export class RustProjectUpdater implements ProjectUpdater {
     }
 
     async execute() {
-        vscode.window.showInformationMessage("RustProjectUpdater: execute");
-
         const srcDir = ["src"];
         const testDir = ["tests"];
         const regex = /^[a-z]{3}\d{3}$/;
@@ -42,7 +40,10 @@ export class RustProjectUpdater implements ProjectUpdater {
 
         return Promise.all(this.contestData.tasks.map(async (task) => {
             return Promise.all([
-                vscode.workspace.fs.writeFile(vscode.Uri.file(`${this.projectPath}/${srcDir.join("/")}/${task.name}.rs`), Uint8Array.from("")),
+                vscode.workspace.fs.writeFile(
+                    vscode.Uri.file(`${this.projectPath}/${srcDir.join("/")}/${task.name}.rs`),
+                    Buffer.from(SOURCE, 'utf-8')
+                ),
                 vscode.workspace.fs.writeFile(
                     vscode.Uri.file(`${this.projectPath}/${testDir.join("/")}/test_${this.contestData.name}_${task.name}.rs`),
                     Buffer.from(this.createTestCode(task), 'utf-8')
@@ -51,7 +52,6 @@ export class RustProjectUpdater implements ProjectUpdater {
         })).then(() => {
             return vscode.workspace.fs.readFile(vscode.Uri.file(`${this.projectPath}/Cargo.toml`));
         }).then((data) => {
-            vscode.window.showInformationMessage("Cargo.toml: " + JSON.stringify(data));
             const additionalText = this.contestData.tasks.map((task) => {
                 return `
 [[bin]]
@@ -80,8 +80,10 @@ path = "${this.projectPath}/${srcDir.join("/")}/${task.name}.rs"
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// テストファイルのテンプレート
+// ソースファイルのテンプレート
 ////////////////////////////////////////////////////////////////////////////
+const SOURCE = `fn main() {}`
+
 const TEST_HEAD = `use std::process::Command;
 `
 

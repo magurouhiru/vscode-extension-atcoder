@@ -1,6 +1,10 @@
 {
   "name": "exatcoder",
   "displayName": "ExAtCoder",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/magurouhiru/vscode-extension-atcoder"
+  },
   "description": "",
   "version": "0.0.1",
   "engines": {
@@ -32,7 +36,8 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "vsce": "vsce package"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -50,6 +55,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
+    "@vscode/vsce": "^3.3.2",
     "axios": "^1.8.4",
     "cheerio": "^1.0.0"
   }
