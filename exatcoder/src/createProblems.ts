@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import path from 'path';
 
 import { ContestData, TaskData, getContestDataList } from './httpClient';
+import { ProjectUpdater } from './projectUpdater/projectUpdater';
+import { RustProjectUpdater } from './projectUpdater/rustProjectUpdater';
 
 const LANGUAGE_RUST = 'rust';
 const DEFAULT_TADK_DATA_LIST: TaskData[] = ["A", "B", "C", "D", "E", "F"].map((name) => {
@@ -30,19 +32,27 @@ export function registerCreateProblemsCommand(context: vscode.ExtensionContext) 
         getContestDataList(contestName).catch((err) => {
             // エラー処理
             // 失敗したときはdefaultのデータを返す
-            vscode.window.showErrorMessage(`エラーが発生したのでデフォルトで作成します。\nError: ${JSON.stringify(err)}`);
+            vscode.window.showErrorMessage(`データ取得でエラーが発生しました。\nError: ${JSON.stringify(err)}`);
+            vscode.window.showErrorMessage(`デフォルトデータでプロジェクト更新します。`);
             return { name: contestName, tasks: DEFAULT_TADK_DATA_LIST } satisfies ContestData as ContestData;
         }).then((contestData) => {
             // データ取得チェック
             // 取得できなかった場合はdefaultのデータを返す
             if (contestData === undefined || contestData.tasks.length === 0) {
-                vscode.window.showErrorMessage(`データがないのでデフォルトで作成します。`);
+                vscode.window.showErrorMessage(`空データのためデフォルトデータでプロジェクト更新します。`);
                 return { name: contestName, tasks: DEFAULT_TADK_DATA_LIST } satisfies ContestData as ContestData;
             } else {
                 return contestData;
             }
         }).then((contestData) => {
-            vscode.window.showInformationMessage(`contestData: ${JSON.stringify(contestData)}`);
+            // プロジェクト更新
+            return ProjectUpdaterFactory(settings.language, settings.projectPath, contestData).execute()
+        }).catch((err) => {
+            // エラー処理
+            vscode.window.showErrorMessage(`プロジェクト更新でエラーが発生しました。\nError: ${JSON.stringify(err)}`);
+        }).finally(() => {
+            // 処理が終わったらメッセージを表示
+            vscode.window.showInformationMessage("プロジェクト更新が完了しました。");
         });
     });
     context.subscriptions.push(disposable);
@@ -63,3 +73,15 @@ function getProjectPath() {
     return path.join(wp);
 }
 
+////////////////////////////////////////////////////////////////////
+// プロジェクトを更新するクラス取得ためのファクトリー関数
+// 機能拡張に当たって、他言語のプロジェクトを更新したくなったらここを変更する。
+////////////////////////////////////////////////////////////////////
+function ProjectUpdaterFactory(language: string, projectPath: string, contestData: ContestData): ProjectUpdater {
+    switch (language) {
+        case LANGUAGE_RUST:
+            return new RustProjectUpdater(projectPath, contestData);
+        default:
+            throw new Error(`Unsupported language: ${language}`);
+    }
+}
