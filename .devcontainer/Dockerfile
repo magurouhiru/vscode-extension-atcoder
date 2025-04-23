@@ -1,10 +1,19 @@
-FROM node:18.3.0
+ARG NODEJS_VERSION
 
-WORKDIR /ext
+# 公式イメージを使用
+FROM node:${NODEJS_VERSION}-slim
 
-RUN apt -y update \
-    && apt -y upgrade \
-    && apt install -y curl git gcc \
-    && curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain 1.47.0-x86_64-unknown-linux-gnu \
-    && . $HOME/.cargo/env \
-    && rustup component add rls rust-analysis rust-src rustfmt
+ARG NODEJS_ANALYZER_VERSION
+ARG NODEJS_USERNAME
+ARG NODEJS_USER_UID
+ARG NODEJS_USER_GID
+ARG NODEJS_WORKDIR_NAME
+ARG NODEJS_WORKDIR=/home/${NODEJS_USERNAME}/${NODEJS_WORKDIR_NAME}
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y git \
+    && groupadd --gid ${NODEJS_USER_GID} ${NODEJS_USERNAME} \
+    && useradd --uid ${NODEJS_USER_UID} --gid ${NODEJS_USER_GID} -m ${NODEJS_USERNAME} \
+    && mkdir ${NODEJS_WORKDIR} \
+    && chown -R ${NODEJS_USERNAME}:${NODEJS_USERNAME} /home/${NODEJS_USERNAME}
