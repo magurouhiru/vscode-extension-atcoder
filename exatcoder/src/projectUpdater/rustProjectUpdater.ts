@@ -21,7 +21,7 @@ export class RustProjectUpdater implements ProjectUpdater {
 
     async execute() {
         const srcDir = ["src"];
-        const testDir = ["tests"];
+        // const testDir = ["tests"];
         const regex = /^[a-z]{3}\d{3}$/;
         if (regex.test(this.contestData.name)) {
             // abc402 とかだったら
@@ -36,7 +36,7 @@ export class RustProjectUpdater implements ProjectUpdater {
 
         // 作成する場所のディレクトリを作成する
         await vscode.workspace.fs.createDirectory(vscode.Uri.file(this.projectPath + "/" + srcDir.join("/")));
-        await vscode.workspace.fs.createDirectory(vscode.Uri.file(this.projectPath + "/" + testDir.join("/")));
+        // await vscode.workspace.fs.createDirectory(vscode.Uri.file(this.projectPath + "/" + testDir.join("/")));
 
         return Promise.all(this.contestData.tasks.map(async (task) => {
             return Promise.all([
@@ -45,7 +45,7 @@ export class RustProjectUpdater implements ProjectUpdater {
                     Buffer.from(SOURCE, 'utf-8')
                 ),
                 vscode.workspace.fs.writeFile(
-                    vscode.Uri.file(`${this.projectPath}/${testDir.join("/")}/test_${this.contestData.name}_${task.name}.rs`),
+                    vscode.Uri.file(`${this.projectPath}/${srcDir.join("/")}/test_${task.name}.rs`),
                     Buffer.from(this.createTestCode(task), 'utf-8')
                 ),
             ])
@@ -57,6 +57,10 @@ export class RustProjectUpdater implements ProjectUpdater {
 [[bin]]
 name = "${this.contestData.name}${task.name}"
 path = "${this.projectPath}/${srcDir.join("/")}/${task.name}.rs"
+
+[[test]]
+name = "test_${this.contestData.name}${task.name}"
+path = "${this.projectPath}/${srcDir.join("/")}/test_${task.name}.rs"
 `
             }).join("");
             const text = data.toString() + additionalText;
