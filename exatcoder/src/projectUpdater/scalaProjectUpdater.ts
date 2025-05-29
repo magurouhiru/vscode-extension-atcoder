@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { ProjectUpdater } from "./projectUpdater";
 import { ContestData, TaskData } from "../httpClient";
 
-export class RustProjectUpdater implements ProjectUpdater {
+export class ScalaProjectUpdater implements ProjectUpdater {
     private projectPath: string;
     private contestData: ContestData;
 
@@ -16,27 +16,28 @@ export class RustProjectUpdater implements ProjectUpdater {
     }
 
     async execute() {
-        const srcDir = ["src", "main", "scala"];
-        const testDir = ["src", "test", "scala"];
+        const srcDirTmp = ["src", "main", "scala"];
+        const testDirTmp = ["src", "test", "scala"];
         const regex = /^[a-z]{3}\d{3}$/;
-        const contestName = [this.contestData.name];
+        const contestName = [];
         if (regex.test(this.contestData.name)) {
             // abc402 とかだったら
             // src/abc/402/ みたいなディレクトリ構成にする
-            contestName[0] = this.contestData.name.slice(0, 3);
-            contestName[1] = this.contestData.name.slice(3, 6);
-            srcDir.push(contestName[0]);
-            srcDir.push(contestName[1]);
+            contestName.push(this.contestData.name.slice(0, 3));
+            contestName.push(this.contestData.name.slice(3, 6).toString());
         } else {
             // それ以外(abc_402)だったら
             // src/abc_402/ みたいなディレクトリ構成にする
-            srcDir.push(contestName[0]);
+            contestName.push(this.contestData.name);
         }
+        const srcDir = [...srcDirTmp, ...contestName];
+        const testDir = [...testDirTmp, ...contestName];
+
         const isNumber = /^\d+$/;
         const packageName = contestName.map((x) => {
             if (isNumber.test(x)) {
                 // 数字だけの文字列は、バックスラッシュ＆バッククォートで囲む
-                return `\\\`${x}\\\``;
+                return `\`${x}\``;
             } else {
                 // それ以外はそのまま
                 return x;
@@ -63,13 +64,14 @@ export class RustProjectUpdater implements ProjectUpdater {
 
     createMainCode(task: TaskData, packageName: string) {
         const head = MAIN_HEAD.replace(/{{rplace:package_name}}/g, packageName);
-        return head;
+        const body = MAIN_BODY.replace(/{{rplace:task_name}}/g, task.name);
+        return head + "\n" + body;
     }
 
     createTestCode(task: TaskData, packageName: string) {
         const head = TEST_HEAD
-        .replace(/{{rplace:package_name}}/g, packageName)
-        .replace(/{{rplace:task_name}}/g, task.name);
+            .replace(/{{rplace:package_name}}/g, packageName)
+            .replace(/{{rplace:task_name}}/g, task.name);
         const body = task.sampleTestCase.map((testCase, index) => {
             return TEST_BODY
                 .replace(/{{rplace:test_id}}/g, this.contestData.name + task.name)
@@ -84,8 +86,17 @@ export class RustProjectUpdater implements ProjectUpdater {
 ////////////////////////////////////////////////////////////////////////////
 // ソースファイルのテンプレート
 ////////////////////////////////////////////////////////////////////////////
-const MAIN_HEAD = `package {{rplace:package_name}}`
+const MAIN_HEAD = `package {{rplace:package_name}}
+`
 // const MAIN_HEAD = `package abc.\`407\``
+
+const MAIN_BODY = `import scala.io.StdIn.readLine
+
+object {{rplace:task_name}} {
+  def main(args: Array[String]): Unit = {
+  }
+}
+`
 
 const TEST_HEAD = `package {{rplace:package_name}}
 
