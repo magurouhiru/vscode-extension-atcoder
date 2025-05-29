@@ -1,3 +1,6 @@
 [submodule "vscode-atcoder-rust"]
 	path = vscode-atcoder-rust
 	url = https://github.com/magurouhiru/vscode-atcoder-rust.git
+[submodule "vscode-atcoder-scala"]
+	path = vscode-atcoder-scala
+	url = https://github.com/magurouhiru/vscode-atcoder-scala.git
